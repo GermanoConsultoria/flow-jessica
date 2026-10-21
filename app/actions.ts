@@ -872,22 +872,6 @@ export async function criarProjeto(formData: FormData): Promise<ActionResult<{ i
   const descricao = formData.get('descricao') as string
   const equipeId = formData.get('equipeId') as string
   const responsavelId = (formData.get('responsavelId') as string) || null
-
-  // --- CAMPOS ONBLOX ---
-  const isTemplateOnblox = formData.get('isTemplateOnblox') === 'true'
-  
-  // Inteligência do ERP (Se for Outro, pega o campo de texto)
-  const erpSelect = formData.get('erpSelect') as string
-  const erpPersonalizado = formData.get('erpPersonalizado') as string
-  const erpFinal = erpSelect === 'Outro' ? erpPersonalizado : erpSelect
-
-  const dadosAcesso = formData.get('dadosAcesso') as string
-  const pacoteOnblox = formData.get('pacote_onblox') as string
-  const tipoIntegracao = formData.get('tipo_integracao') as string
-  
-  // Status e Pausa
-  const statusCliente = formData.get('status_cliente') as string || 'EM_ANDAMENTO'
-  const motivoPausa = formData.get('motivo_pausa') as string
   const dataInicio = formData.get('data_inicio') as string
   const dataPrevistaEntrega = formData.get('data_prevista_entrega') as string
 
@@ -911,70 +895,19 @@ export async function criarProjeto(formData: FormData): Promise<ActionResult<{ i
           equipe_id: equipeId || null,
           data_inicio: dataInicio ? new Date(dataInicio) : null,
           data_prevista_entrega: dataPrevistaEntrega ? new Date(dataPrevistaEntrega) : null,
-          ...(isTemplateOnblox && {
-              fase_macro: 'MODELAGEM', 
-              erp: erpFinal,
-              dados_acesso: dadosAcesso,
-              pacote_onblox: pacoteOnblox,
-              tipo_integracao: tipoIntegracao,
-              status_cliente: statusCliente,
-              motivo_pausa: statusCliente === 'PAUSADO' ? motivoPausa : null
-          })
       }
   })
 
-  // 2a. Se for projeto em branco, vincula as colunas selecionadas no modal
-  if (!isTemplateOnblox) {
-    const colunasIds = formData.getAll('colunas') as string[]
-    if (colunasIds.length > 0) {
-      await prisma.projetoColuna.createMany({
-        data: colunasIds.map((colunaId, index) => ({
-          projeto_id: projeto.id,
-          coluna_id: colunaId,
-          ordem: index + 1,
-        }))
-      })
-    }
-  }
-
-  // 2b. Se for uma Implantação Onblox, injeta as Colunas Padrão automaticamente!
-  if (isTemplateOnblox && equipeId) {
-      const colunasPadrao = [
-          { nome: 'MODELAGEM', cor: '#3b82f6' }, // Azul
-          { nome: 'CADASTROS BASICOS', cor: '#8b5cf6' }, // Roxo
-          { nome: 'GO LIVE DE PROCESSOS', cor: '#10b981' }, // Verde
-          { nome: 'ATIVIDADES DIA A DIA', cor: '#f59e0b' } // Laranja
-      ]
-
-      let ordem = 1;
-      for (const col of colunasPadrao) {
-          // A. Verifica se essa coluna já existe na biblioteca desta equipe
-          let colunaDb = await prisma.coluna.findFirst({
-              where: { nome: col.nome, equipe_id: equipeId, workspace_id: workspaceId }
-          })
-
-          // B. Se não existir, cadastra na biblioteca da equipe
-          if (!colunaDb) {
-              colunaDb = await prisma.coluna.create({
-                  data: {
-                      nome: col.nome,
-                      cor: col.cor,
-                      workspace_id: workspaceId,
-                      equipe_id: equipeId
-                  }
-              })
-          }
-
-          // C. Vincula a coluna ao Projeto Novo na ordem correta
-          await prisma.projetoColuna.create({
-              data: {
-                  projeto_id: projeto.id,
-                  coluna_id: colunaDb.id,
-                  ordem: ordem
-              }
-          })
-          ordem++;
-      }
+  // 2. Vincula as colunas selecionadas no modal
+  const colunasIds = formData.getAll('colunas') as string[]
+  if (colunasIds.length > 0) {
+    await prisma.projetoColuna.createMany({
+      data: colunasIds.map((colunaId, index) => ({
+        projeto_id: projeto.id,
+        coluna_id: colunaId,
+        ordem: index + 1,
+      }))
+    })
   }
 
   // Atualiza as telas
@@ -1438,7 +1371,6 @@ export async function editarProjeto(formData: FormData): Promise<ActionResult> {
 
   const erp = formData.get('erp') as string
   const dadosAcesso = formData.get('dadosAcesso') as string
-  const pacoteOnblox = formData.get('pacote_onblox') as string
   const tipoIntegracao = formData.get('tipo_integracao') as string
   const statusCliente = formData.get('status_cliente') as string
   const motivoPausa = formData.get('motivo_pausa') as string
@@ -1462,7 +1394,6 @@ export async function editarProjeto(formData: FormData): Promise<ActionResult> {
             descricao,
             erp,
             dados_acesso: dadosAcesso,
-            pacote_onblox: pacoteOnblox,
             tipo_integracao: tipoIntegracao,
             status_cliente: statusCliente,
             motivo_pausa: statusCliente === 'PAUSADO' ? motivoPausa : null,

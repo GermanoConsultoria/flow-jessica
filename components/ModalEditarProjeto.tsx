@@ -14,7 +14,6 @@ interface Props {
     descricao?: string | null
     erp?: string | null
     dados_acesso?: string | null
-    pacote_onblox?: string | null
     tipo_integracao?: string | null
     status_cliente?: string | null
     motivo_pausa?: string | null
@@ -143,7 +142,7 @@ export default function ModalEditarProjeto({ projeto }: Props) {
 
                 <hr className="border-border" />
 
-                {/* DADOS ONBLOX */}
+                {/* DETALHES DA IMPLANTAÇÃO */}
                 <div className="space-y-4">
                     <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
                         Detalhes da Implantação
@@ -161,7 +160,6 @@ export default function ModalEditarProjeto({ projeto }: Props) {
                                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-indigo-600"
                             >
                                 <option value="EM_ANDAMENTO">🟢 Em Andamento</option>
-                                <option value="AGUARDANDO_ONBLOX">⏳ Aguardando Onblox</option>
                                 <option value="AGUARDANDO_CLIENTE">🔔 Aguardando Cliente</option>
                                 <option value="RISCO_CHURN">🔴 Risco Churn</option>
                                 <option value="PAUSADO">⏸️ Pausado</option>
@@ -183,20 +181,6 @@ export default function ModalEditarProjeto({ projeto }: Props) {
                                 />
                             </div>
                         )}
-
-                        {/* PACOTE ONBLOX */}
-                        <div className="col-span-2 sm:col-span-1">
-                            <label className="block text-xs font-bold text-text-muted uppercase mb-1">Pacote Onblox</label>
-                            <select name="pacote_onblox" defaultValue={projeto.pacote_onblox || ''} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-foreground">
-                                <option value="">Selecione...</option>
-                                <option value="WMS + REMOTO">WMS + REMOTO</option>
-                                <option value="WMS + PRESENCIAL">WMS + PRESENCIAL</option>
-                                <option value="RF + REMOTO">RF + REMOTO</option>
-                                <option value="RF + PRESENCIAL">RF + PRESENCIAL</option>
-                                <option value="START + REMOTO">START + REMOTO</option>
-                                <option value="START + PRESENCIAL">START + PRESENCIAL</option>
-                            </select>
-                        </div>
 
                         {/* INTEGRAÇÃO */}
                         <div className="col-span-2 sm:col-span-1">

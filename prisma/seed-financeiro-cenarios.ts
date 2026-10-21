@@ -123,7 +123,7 @@ async function main() {
     { tipo: 'DESPESA', descricao: 'Notebooks para a equipe (4x)', beneficiario: 'Dell Brasil', valor: 2750, categoria: 'fornecedores', venceEm: 30, status: 'PENDENTE', doc: 'CEN-D14', grupo: grpNotebooks, numeroParcelas: 4, parcelaAtual: 4 },
 
     // ---------- RECEITAS: vencidas (inadimplência) ----------
-    { tipo: 'RECEITA', descricao: 'Mensalidade Onblox — Atacado Norte', valor: 2900, categoria: 'mensalidades', venceEm: -4, status: 'PENDENTE', doc: 'CEN-R01' },
+    { tipo: 'RECEITA', descricao: 'Mensalidade — Atacado Norte', valor: 2900, categoria: 'mensalidades', venceEm: -4, status: 'PENDENTE', doc: 'CEN-R01' },
     { tipo: 'RECEITA', descricao: 'Projeto BI — Cliente Delta', valor: 14500, categoria: 'servicos', venceEm: -22, status: 'PENDENTE', doc: 'CEN-R02' },
     { tipo: 'RECEITA', descricao: 'Treinamento in company — Cliente Ômega', valor: 4200, categoria: 'servicos', venceEm: -80, status: 'PENDENTE', doc: 'CEN-R03' },
 
@@ -132,7 +132,7 @@ async function main() {
     { tipo: 'RECEITA', descricao: 'Consultoria avulsa — Cliente Kappa', valor: 3500, categoria: 'servicos', venceEm: -1, status: 'PAGO', pagoEm: 0, doc: 'CEN-R05' }, // recebido hoje
 
     // ---------- RECEITAS: vencendo hoje / sem nº doc ----------
-    { tipo: 'RECEITA', descricao: 'Mensalidade Onblox — Varejo Oeste', valor: 3100, categoria: 'mensalidades', venceEm: 0, status: 'PENDENTE', doc: 'CEN-R06' },
+    { tipo: 'RECEITA', descricao: 'Mensalidade — Varejo Oeste', valor: 3100, categoria: 'mensalidades', venceEm: 0, status: 'PENDENTE', doc: 'CEN-R06' },
     { tipo: 'RECEITA', descricao: 'Reembolso de despesas de evento', valor: 512.33, categoria: 'vendas', venceEm: -2, status: 'PENDENTE', doc: 'CEN-R07' },
 
     // ---------- RECEITA: cancelada ----------

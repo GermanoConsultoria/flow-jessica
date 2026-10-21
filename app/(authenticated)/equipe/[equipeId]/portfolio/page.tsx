@@ -105,7 +105,7 @@ export default async function PortfolioPage(
                             <th className="px-4 py-3">Cliente / Projeto</th>
                             <th className="px-4 py-3">Status</th>
                             <th className="px-4 py-3">Fase Atual</th>
-                            <th className="px-4 py-3">Pacote & Integração</th>
+                            <th className="px-4 py-3">Integração</th>
                             <th className="px-4 py-3">ERP</th>
                             <th className="px-4 py-3">Previsão de Entrega</th>
                             <th className="px-4 py-3 text-center">Ação</th>
@@ -143,10 +143,6 @@ export default async function PortfolioPage(
                                     ) : projeto.status_cliente === 'CONCLUIDO' ? (
                                         <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold w-max">
                                             ✅ Concluído
-                                        </span>
-                                    ) : projeto.status_cliente === 'AGUARDANDO_ONBLOX' ? (
-                                        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded text-xs font-bold w-max">
-                                            ⏳ Aguardando Onblox
                                         </span>
                                     ) : projeto.status_cliente === 'AGUARDANDO_CLIENTE' ? (
                                         <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-xs font-bold w-max">
@@ -207,8 +203,7 @@ export default async function PortfolioPage(
                                 </td>
 
                                 <td className="px-4 py-4">
-                                    <span className="block text-xs font-bold text-foreground">{projeto.pacote_onblox || '-'}</span>
-                                    <span className="block text-[10px] text-gray-400 mt-0.5 uppercase tracking-wider">{projeto.tipo_integracao || '-'}</span>
+                                    <span className="block text-xs font-bold text-foreground">{projeto.tipo_integracao || '-'}</span>
                                 </td>
 
                                 <td className="px-4 py-4">

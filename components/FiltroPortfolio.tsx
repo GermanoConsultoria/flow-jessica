@@ -72,7 +72,6 @@ export default function FiltrosPortfolio({ projetos, fases, responsaveis, mesSel
         >
           <option value="">Todos</option>
           <option value="EM_ANDAMENTO">🟢 Em Andamento</option>
-          <option value="AGUARDANDO_ONBLOX">⏳ Aguardando Onblox</option>
           <option value="AGUARDANDO_CLIENTE">🔔 Aguardando Cliente</option>
           <option value="RISCO_CHURN">🔴 Risco Churn</option>
           <option value="PAUSADO">⏸️ Pausado</option>

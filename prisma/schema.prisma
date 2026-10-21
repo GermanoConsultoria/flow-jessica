@@ -121,7 +121,6 @@ model Projeto {
   erp                    String?
   dados_acesso           String?
   status_cliente         String?         @default("EM_ANDAMENTO")
-  pacote_onblox          String?
   tipo_integracao        String?
   motivo_pausa           String?
   data_inicio            DateTime?

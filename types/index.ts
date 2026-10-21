@@ -18,7 +18,7 @@ export type CampoAlterado =
   | 'RESPONSAVEL'
   | 'ANEXO_REMOVIDO'
 
-export type StatusProjeto = 'EM_ANDAMENTO' | 'PAUSADO' | 'CONCLUIDO' | 'AGUARDANDO_ONBLOX' | 'AGUARDANDO_CLIENTE' | 'RISCO_CHURN'
+export type StatusProjeto = 'EM_ANDAMENTO' | 'PAUSADO' | 'CONCLUIDO' | 'AGUARDANDO_CLIENTE' | 'RISCO_CHURN'
 
 export type RoleUsuario = 'OWNER' | 'MANAGER' | 'MEMBER' | 'USER'
 
@@ -78,12 +78,10 @@ export type Projeto = {
   dt_insert: Date | string
   dt_update: Date | string
   dt_acesso: Date | string
-  // Campos Onblox
   fase_macro: string | null
   erp: string | null
   dados_acesso: string | null
   status_cliente: StatusProjeto | null
-  pacote_onblox: string | null
   tipo_integracao: string | null
   motivo_pausa: string | null
 }

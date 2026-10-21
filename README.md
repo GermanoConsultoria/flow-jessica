@@ -8,7 +8,7 @@ Sistema web full-stack de gerenciamento de projetos e tarefas com foco em equipe
 - **Sprint** — Visão semanal e mensal de tarefas com vencimento no período
 - **Minhas Tarefas** — Visualização em Quadro, Lista ou Calendário com filtros de projeto, responsável, prioridade e status
 - **Dashboards** — Métricas e gráficos de progresso por equipe
-- **Portfólio Onblox** — Acompanhamento de fases de implantação por cliente
+- **Portfólio** — Acompanhamento de fases de implantação por cliente
 - **Templates de Tarefas** — Pacotes reutilizáveis com importação direta para projetos
 - **Comentários e Anexos** — Cole imagens diretamente com `Ctrl+V`, histórico completo de alterações
 - **Gestão de Equipes** — Multi-tenant com isolamento por workspace, roles (OWNER, MANAGER, MEMBER, USER)

@@ -70,11 +70,11 @@ async function main() {
   ]
 
   const receitas: { descricao: string; valor: number; categoria: string; venceEm: number; status: StatusLancamento; doc?: string }[] = [
-    { descricao: 'Implantação WMS - Cliente Macropack', valor: 25000, categoria: 'Serviços', venceEm: -30, status: 'PAGO', doc: 'FAT-501' },
-    { descricao: 'Implantação WMS - Cliente Macropack', valor: 25000, categoria: 'Serviços', venceEm: 0, status: 'PENDENTE', doc: 'FAT-502' },
-    { descricao: 'Mensalidade Onblox - Distribuidora Sul', valor: 3200, categoria: 'Mensalidades', venceEm: -10, status: 'PAGO' },
-    { descricao: 'Mensalidade Onblox - Distribuidora Sul', valor: 3200, categoria: 'Mensalidades', venceEm: 20, status: 'PENDENTE' },
-    { descricao: 'Mensalidade Onblox - Comercial Rio', valor: 2750, categoria: 'Mensalidades', venceEm: -6, status: 'PENDENTE' },
+    { descricao: 'Implantação de projeto - Cliente Macropack', valor: 25000, categoria: 'Serviços', venceEm: -30, status: 'PAGO', doc: 'FAT-501' },
+    { descricao: 'Implantação de projeto - Cliente Macropack', valor: 25000, categoria: 'Serviços', venceEm: 0, status: 'PENDENTE', doc: 'FAT-502' },
+    { descricao: 'Mensalidade - Distribuidora Sul', valor: 3200, categoria: 'Mensalidades', venceEm: -10, status: 'PAGO' },
+    { descricao: 'Mensalidade - Distribuidora Sul', valor: 3200, categoria: 'Mensalidades', venceEm: 20, status: 'PENDENTE' },
+    { descricao: 'Mensalidade - Comercial Rio', valor: 2750, categoria: 'Mensalidades', venceEm: -6, status: 'PENDENTE' },
     { descricao: 'Venda de licença adicional', valor: 4900, categoria: 'Vendas', venceEm: -18, status: 'PAGO', doc: 'FAT-498' },
     { descricao: 'Venda de licença adicional', valor: 4900, categoria: 'Vendas', venceEm: 8, status: 'PENDENTE', doc: 'FAT-510' },
     { descricao: 'Consultoria pontual - Cliente Nova Era', valor: 6500, categoria: 'Serviços', venceEm: 33, status: 'PENDENTE' },
