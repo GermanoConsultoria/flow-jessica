@@ -1,0 +1,11 @@
+export default function Loading() {
+  return (
+    <div className="animate-pulse space-y-4 p-4 sm:p-6">
+      <div className="h-8 w-44 bg-surface-highlight rounded-lg" />
+      <div className="h-12 bg-surface-highlight rounded-xl" />
+      {[...Array(8)].map((_, i) => (
+        <div key={i} className="h-14 bg-surface-highlight rounded-xl" />
+      ))}
+    </div>
+  )
+}

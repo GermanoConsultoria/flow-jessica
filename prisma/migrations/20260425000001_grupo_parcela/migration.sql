@@ -1,0 +1,1 @@
+ALTER TABLE "lancamento_financeiro" ADD COLUMN IF NOT EXISTS "grupo_parcela_id" TEXT;

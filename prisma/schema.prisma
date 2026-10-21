@@ -1,0 +1,405 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Workspace {
+  id        String    @id @default(dbgenerated("gen_random_uuid()"))
+  nome      String
+  dt_insert DateTime  @default(now())
+  colunas   Coluna[]
+  equipes   Equipe[]
+  projetos  Projeto[]
+  usuarios  Usuario[]
+
+  @@map("workspace")
+}
+
+model Equipe {
+  id           String           @id @default(dbgenerated("gen_random_uuid()"))
+  nome         String
+  descricao    String?
+  workspace_id String
+  dt_insert    DateTime         @default(now())
+  dt_update    DateTime         @default(now()) @updatedAt
+  colunas      Coluna[]
+  workspace    Workspace        @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  membros      EquipeUsuario[]
+  pacotes      PacoteTemplate[]
+  projetos     Projeto[]
+  recursos     RecursoEquipe[]
+
+  @@map("equipe")
+}
+
+model EquipeUsuario {
+  equipe_id  String
+  usuario_id String
+  role       String   @default("MEMBER")
+  dt_insert  DateTime @default(now())
+  equipe     Equipe   @relation(fields: [equipe_id], references: [id], onDelete: Cascade)
+  usuario    Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+
+  @@id([equipe_id, usuario_id])
+  @@map("equipe_usuario")
+}
+
+model Usuario {
+  id                    String            @id @default(dbgenerated("gen_random_uuid()"))
+  nome                  String
+  email                 String            @unique
+  senha                 String
+  dt_insert             DateTime          @default(now())
+  ativo                 Boolean           @default(true)
+  cargo                 String?
+  dt_update             DateTime          @default(now()) @updatedAt
+  imagem                String?
+  role                  String            @default("USER")
+  workspace_id          String
+  comentarios           Comentario[]
+  equipes               EquipeUsuario[]
+  acoes_historico       HistoricoTarefa[]
+  notificacoes          Notificacao[]     @relation("NotificacaoDestinatario")
+  notificacoes_enviadas Notificacao[]     @relation("NotificacaoRemetente")
+  projetos              Projeto[]
+  colunas_responsavel   ProjetoColuna[]   @relation("ProjetoColunaResponsavel")
+  tarefas               Tarefa[]
+  workspace             Workspace         @relation(fields: [workspace_id], references: [id], onDelete: NoAction, map: "Usuario_workspace_id_fkey")
+
+  @@map("usuario")
+}
+
+model Notificacao {
+  id              String   @id @default(dbgenerated("gen_random_uuid()"))
+  workspace_id    String
+  destinatario_id String
+  remetente_id    String
+  tarefa_id       String
+  mensagem        String
+  lida            Boolean  @default(false)
+  dt_insert       DateTime @default(now())
+  destinatario    Usuario  @relation("NotificacaoDestinatario", fields: [destinatario_id], references: [id], onDelete: Cascade)
+  remetente       Usuario  @relation("NotificacaoRemetente", fields: [remetente_id], references: [id], onDelete: Cascade)
+  tarefa          Tarefa   @relation(fields: [tarefa_id], references: [id], onDelete: Cascade)
+
+  @@map("notificacao")
+}
+
+model Coluna {
+  id           String          @id(map: "Coluna_pkey") @default(dbgenerated("gen_random_uuid()"))
+  nome         String
+  cor          String?
+  workspace_id String
+  dt_insert    DateTime        @default(now())
+  dt_update    DateTime        @default(now()) @updatedAt
+  equipe_id    String?
+  workspace    Workspace       @relation(fields: [workspace_id], references: [id], onDelete: NoAction, map: "Coluna_workspace_id_fkey")
+  equipe       Equipe?         @relation(fields: [equipe_id], references: [id])
+  projetos     ProjetoColuna[]
+  tarefas      Tarefa[]
+
+  @@map("coluna")
+}
+
+model Projeto {
+  id                     String          @id @default(dbgenerated("gen_random_uuid()"))
+  nome                   String
+  workspace_id           String
+  dt_insert              DateTime        @default(now())
+  descricao              String?
+  dt_acesso              DateTime        @default(now())
+  dt_update              DateTime        @default(now()) @updatedAt
+  usuario_id             String
+  ativo                  Boolean         @default(true)
+  imagem                 String?
+  equipe_id              String?
+  fase_macro             String?
+  erp                    String?
+  dados_acesso           String?
+  status_cliente         String?         @default("EM_ANDAMENTO")
+  pacote_onblox          String?
+  tipo_integracao        String?
+  motivo_pausa           String?
+  data_inicio            DateTime?
+  data_prevista_entrega  DateTime?
+  link_fluxo_implantacao String?
+  usuario                Usuario         @relation(fields: [usuario_id], references: [id], onDelete: NoAction, map: "Projeto_usuario_id_fkey")
+  workspace              Workspace       @relation(fields: [workspace_id], references: [id], onDelete: NoAction, map: "Projeto_workspace_id_fkey")
+  equipe                 Equipe?         @relation(fields: [equipe_id], references: [id])
+  colunas                ProjetoColuna[]
+  tarefas                Tarefa[]
+
+  @@map("projeto")
+}
+
+model ProjetoColuna {
+  projeto_id     String
+  coluna_id      String
+  ordem          Int
+  data_inicio    DateTime?
+  data_fim       DateTime?
+  responsavel_id String?
+  coluna         Coluna    @relation(fields: [coluna_id], references: [id], onDelete: Cascade, map: "ProjetoColuna_coluna_id_fkey")
+  projeto        Projeto   @relation(fields: [projeto_id], references: [id], onDelete: Cascade, map: "ProjetoColuna_projeto_id_fkey")
+  responsavel    Usuario?  @relation("ProjetoColunaResponsavel", fields: [responsavel_id], references: [id])
+
+  @@id([projeto_id, coluna_id])
+  @@map("projeto_coluna")
+}
+
+model Tarefa {
+  id                  String            @id @default(dbgenerated("gen_random_uuid()"))
+  titulo              String
+  descricao           String?
+  usuario_id          String?
+  dt_insert           DateTime          @default(now())
+  coluna_id           String?
+  concluida           Boolean           @default(false)
+  dificuldade_id      Int
+  dt_conclusao        DateTime?
+  dt_update           DateTime          @default(now()) @updatedAt
+  dt_vencimento       DateTime?
+  prioridade_id       Int
+  projeto_id          String
+  recorrencia         Recorrencia       @default(NAO)
+  dias_recorrencia    String?
+  dia_mes_recorrencia Int?
+  formato             String?
+  selecionar          String?
+  ordem               Int               @default(0)
+  anexos              Anexo[]
+  comentarios         Comentario[]
+  historico           HistoricoTarefa[]
+  notificacoes        Notificacao[]
+  coluna              Coluna?           @relation(fields: [coluna_id], references: [id], map: "Tarefa_coluna_id_fkey")
+  dificuldade         OpcaoDificuldade  @relation(fields: [dificuldade_id], references: [id], onDelete: NoAction, map: "Tarefa_dificuldade_id_fkey")
+  prioridade          OpcaoPrioridade   @relation(fields: [prioridade_id], references: [id], onDelete: NoAction, map: "Tarefa_prioridade_id_fkey")
+  projeto             Projeto           @relation(fields: [projeto_id], references: [id], onDelete: Cascade, map: "Tarefa_projeto_id_fkey")
+  usuario             Usuario?          @relation(fields: [usuario_id], references: [id], map: "Tarefa_usuario_id_fkey")
+
+  @@map("tarefa")
+}
+
+model OpcaoPrioridade {
+  id      Int      @id(map: "OpcaoPrioridade_pkey")
+  nome    String
+  tarefas Tarefa[]
+
+  @@map("opcao_prioridade")
+}
+
+model OpcaoDificuldade {
+  id      Int      @id(map: "OpcaoDificuldade_pkey")
+  nome    String
+  tarefas Tarefa[]
+
+  @@map("opcao_dificuldade")
+}
+
+model Comentario {
+  id         String   @id(map: "Comentario_pkey") @default(dbgenerated("gen_random_uuid()"))
+  texto      String
+  tarefa_id  String
+  usuario_id String
+  dt_insert  DateTime @default(now())
+  dt_update  DateTime @default(now()) @updatedAt
+  imagemUrl  String?
+  tarefa     Tarefa   @relation(fields: [tarefa_id], references: [id], onDelete: Cascade, map: "Comentario_tarefa_id_fkey")
+  usuario    Usuario  @relation(fields: [usuario_id], references: [id], onDelete: NoAction, map: "Comentario_usuario_id_fkey")
+
+  @@map("comentario")
+}
+
+model HistoricoTarefa {
+  id           String        @id(map: "HistoricoTarefa_pkey") @default(dbgenerated("gen_random_uuid()"))
+  tarefa_id    String
+  usuario_id   String?
+  campo        CampoAlterado
+  valor_antigo String?
+  valor_novo   String?
+  dt_evento    DateTime      @default(now())
+  tarefa       Tarefa        @relation(fields: [tarefa_id], references: [id], onDelete: Cascade, map: "HistoricoTarefa_tarefa_id_fkey")
+  usuario      Usuario?      @relation(fields: [usuario_id], references: [id], map: "HistoricoTarefa_usuario_id_fkey")
+
+  @@index([dt_evento])
+  @@index([tarefa_id])
+  @@map("historico_tarefa")
+}
+
+model Anexo {
+  id        String   @id(map: "Anexo_pkey") @default(dbgenerated("gen_random_uuid()"))
+  nome      String
+  url       String
+  key       String
+  tamanho   Int
+  dt_upload DateTime @default(now())
+  tarefa_id String
+  tarefa    Tarefa   @relation(fields: [tarefa_id], references: [id], onDelete: Cascade, map: "Anexo_tarefa_id_fkey")
+
+  @@map("anexo")
+}
+
+model PacoteTemplate {
+  id        String           @id @default(dbgenerated("gen_random_uuid()"))
+  nome      String
+  descricao String?
+  equipe_id String
+  dt_insert DateTime         @default(now())
+  dt_update DateTime         @default(now()) @updatedAt
+  equipe    Equipe           @relation(fields: [equipe_id], references: [id], onDelete: Cascade)
+  tarefas   TarefaTemplate[]
+
+  @@map("pacote_template")
+}
+
+model TarefaTemplate {
+  id             String         @id @default(dbgenerated("gen_random_uuid()"))
+  titulo         String
+  descricao      String?
+  dificuldade_id Int            @default(1)
+  prioridade_id  Int            @default(1)
+  pacote_id      String
+  dt_insert      DateTime       @default(now())
+  ordem          Int            @default(0)
+  pacote         PacoteTemplate @relation(fields: [pacote_id], references: [id], onDelete: Cascade)
+
+  @@map("tarefa_template")
+}
+
+model RecursoEquipe {
+  id           String   @id @default(dbgenerated("gen_random_uuid()"))
+  equipe_id    String
+  titulo       String
+  url          String
+  descricao    String?
+  categoria    String?
+  icone        String?
+  tipo         String   @default("LINK")
+  arquivo_nome String?
+  ordem        Int      @default(0)
+  dt_insert    DateTime @default(now())
+  dt_update    DateTime @default(now()) @updatedAt
+  equipe       Equipe   @relation(fields: [equipe_id], references: [id], onDelete: Cascade)
+
+  @@map("recurso_equipe")
+}
+
+model PlanoContas {
+  id           String                 @id @default(dbgenerated("gen_random_uuid()"))
+  workspace_id String
+  tipo         TipoLancamento
+  nome         String
+  ativo        Boolean                @default(true)
+  dt_insert    DateTime               @default(now())
+  dt_update    DateTime               @default(now()) @updatedAt
+  lancamentos  LancamentoFinanceiro[]
+
+  @@map("plano_contas")
+}
+
+model LancamentoFinanceiro {
+  id                String                 @id @default(dbgenerated("gen_random_uuid()"))
+  workspace_id      String
+  tipo              TipoLancamento
+  descricao         String
+  beneficiario      String?
+  valor             Decimal                @db.Decimal(15, 2)
+  dt_vencimento     DateTime
+  dt_pagamento      DateTime?
+  numero_documento  String?
+  plano_contas_id   String
+  status            StatusLancamento       @default(PENDENTE)
+  recorrencia       Recorrencia            @default(NAO)
+  numero_parcelas   Int?
+  parcela_atual     Int?
+  grupo_parcela_id  String?
+  lancamento_pai_id String?
+  dt_insert         DateTime               @default(now())
+  dt_update         DateTime               @default(now()) @updatedAt
+  anexos            AnexoFinanceiro[]
+  parciais          PagamentoParcial[]
+  lancamento_pai    LancamentoFinanceiro?  @relation("Parcelas", fields: [lancamento_pai_id], references: [id])
+  parcelas          LancamentoFinanceiro[] @relation("Parcelas")
+  plano_contas      PlanoContas            @relation(fields: [plano_contas_id], references: [id], onDelete: NoAction)
+
+  @@map("lancamento_financeiro")
+}
+
+model PagamentoParcial {
+  id            String               @id @default(dbgenerated("gen_random_uuid()"))
+  lancamento_id String
+  valor         Decimal              @db.Decimal(15, 2)
+  dt_pagamento  DateTime
+  observacao    String?
+  dt_insert     DateTime             @default(now())
+  lancamento    LancamentoFinanceiro @relation(fields: [lancamento_id], references: [id], onDelete: Cascade)
+
+  @@index([lancamento_id])
+  @@map("pagamento_parcial")
+}
+
+model AnexoFinanceiro {
+  id            String               @id @default(dbgenerated("gen_random_uuid()"))
+  lancamento_id String
+  nome          String
+  url           String
+  key           String
+  tamanho       Int
+  dt_upload     DateTime             @default(now())
+  lancamento    LancamentoFinanceiro @relation(fields: [lancamento_id], references: [id], onDelete: Cascade)
+
+  @@map("anexo_financeiro")
+}
+
+model Cliente {
+  id                String    @id @default(dbgenerated("gen_random_uuid()"))
+  workspace_id      String
+  nome              String
+  plano_contratado  String?
+  valor_mensalidade Decimal?  @db.Decimal(15, 2)
+  vencimento_1      DateTime?
+  vencimento_2      DateTime?
+  data_entrada      DateTime?
+  data_prevista     DateTime?
+  ativo             Boolean   @default(true)
+  dt_insert         DateTime  @default(now())
+  dt_update         DateTime  @default(now()) @updatedAt
+
+  @@map("cliente")
+}
+
+enum TipoLancamento {
+  DESPESA
+  RECEITA
+}
+
+enum StatusLancamento {
+  PENDENTE
+  PAGO
+  CANCELADO
+}
+
+enum Recorrencia {
+  NAO
+  DIARIAMENTE
+  SEMANALMENTE
+  MENSALMENTE
+}
+
+enum CampoAlterado {
+  CRIACAO
+  TITULO
+  DESCRICAO
+  DT_VENCIMENTO
+  PRIORIDADE
+  DIFICULDADE
+  COLUNA
+  CONCLUSAO
+  REABERTURA
+  RESPONSAVEL
+  ANEXO_REMOVIDO
+}
