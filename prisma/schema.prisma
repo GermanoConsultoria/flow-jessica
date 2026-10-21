@@ -354,23 +354,6 @@ model AnexoFinanceiro {
   @@map("anexo_financeiro")
 }
 
-model Cliente {
-  id                String    @id @default(dbgenerated("gen_random_uuid()"))
-  workspace_id      String
-  nome              String
-  plano_contratado  String?
-  valor_mensalidade Decimal?  @db.Decimal(15, 2)
-  vencimento_1      DateTime?
-  vencimento_2      DateTime?
-  data_entrada      DateTime?
-  data_prevista     DateTime?
-  ativo             Boolean   @default(true)
-  dt_insert         DateTime  @default(now())
-  dt_update         DateTime  @default(now()) @updatedAt
-
-  @@map("cliente")
-}
-
 enum TipoLancamento {
   DESPESA
   RECEITA

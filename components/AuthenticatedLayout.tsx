@@ -88,8 +88,7 @@ export default function AuthenticatedLayout({ children, usuario, equipeAtual: eq
                 <div className="p-2 space-y-1">
                   {/* O Início agora aponta para a raiz Global (/) */}
                   <SidebarLink href="/" icon="🏠" label="Início" isOpen={isSidebarOpen} active={pathname === '/'} />
-                  <SidebarLink href="/clientes" icon="👥" label="Clientes" isOpen={isSidebarOpen} active={pathname?.startsWith('/clientes') ?? false} />
-                  
+
                   {/* MÓDULO FINANCEIRO — apenas OWNER */}
                   {usuario?.role === 'OWNER' && <div>
                     {isSidebarOpen ? (
