@@ -5,20 +5,20 @@ import { createContext, useContext, useEffect, useState } from 'react'
 type Theme = 'dark' | 'light'
 
 const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
-  theme: 'dark',
+  theme: 'light',
   toggle: () => {},
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark')
+  const [theme, setTheme] = useState<Theme>('light')
 
   useEffect(() => {
     const saved = localStorage.getItem('flow-theme') as Theme | null
-    if (saved === 'light') setTheme('light')
+    if (saved === 'dark') setTheme('dark')
   }, [])
 
   useEffect(() => {
-    document.documentElement.classList.toggle('light-theme', theme === 'light')
+    document.documentElement.classList.toggle('dark-theme', theme === 'dark')
     localStorage.setItem('flow-theme', theme)
   }, [theme])
 
