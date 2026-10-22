@@ -1,20 +1,14 @@
-import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import AuthenticatedLayout from '@/components/AuthenticatedLayout'
+import { getUsuarioAtual } from '@/lib/usuario-atual'
 
 export default async function AuthenticatedRootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
-  if (!session?.user?.email) redirect('/login')
-
-  const usuario = await prisma.usuario.findUnique({
-    where: { email: session.user.email },
-    include: { equipes: { include: { equipe: true } } }
-  })
+  const usuario = await getUsuarioAtual()
 
   if (!usuario) redirect('/login')
 
