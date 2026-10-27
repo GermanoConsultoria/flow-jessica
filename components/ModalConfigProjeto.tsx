@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { vincularMultiplasColunas, desvincularColunaDoProjeto } from '@/app/actions'
+import { useRef, useState } from 'react'
+import { vincularMultiplasColunas, desvincularColunaDoProjeto, criarEtapaNoProjeto } from '@/app/actions'
 import type { ProjetoBasico, ColunaBasica } from '@/types'
 
 interface ProjetoColuna {
@@ -12,15 +12,20 @@ interface ProjetoColuna {
 
 interface Props {
   projeto: ProjetoBasico
+  equipeId: string
   colunasDisponiveis: ColunaBasica[]
   colunasDoProjeto: ProjetoColuna[]
 }
 
-export default function ModalConfigProjeto({ projeto, colunasDisponiveis, colunasDoProjeto }: Props) {
+export default function ModalConfigProjeto({ projeto, equipeId, colunasDisponiveis, colunasDoProjeto }: Props) {
   const [isOpen, setIsOpen] = useState(false)
-  
+
   // Estado para controlar visualmente o loading do botão Salvar
   const [isSaving, setIsSaving] = useState(false)
+
+  // Estado para controlar o loading do botão "Criar Etapa"
+  const [isCriando, setIsCriando] = useState(false)
+  const formCriarEtapaRef = useRef<HTMLFormElement>(null)
 
   // Filtra as colunas que AINDA NÃO estão no projeto (disponíveis para adicionar)
   const idsUsados = new Set(colunasDoProjeto.map(c => c.coluna_id))
@@ -90,7 +95,44 @@ export default function ModalConfigProjeto({ projeto, colunasDisponiveis, coluna
 
           <hr className="border-gray-100" />
 
-          {/* 2. CHECKLIST PARA ADICIONAR NOVAS */}
+          {/* 2. CRIAR NOVA ETAPA (nasce vinculada direto a este projeto) */}
+          <div>
+            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+              🆕 Criar Nova Etapa
+            </h4>
+            <form
+              ref={formCriarEtapaRef}
+              action={async (formData) => {
+                setIsCriando(true)
+                await criarEtapaNoProjeto(formData)
+                setIsCriando(false)
+                formCriarEtapaRef.current?.reset()
+              }}
+              className="flex gap-3"
+            >
+              <input type="hidden" name="projetoId" value={projeto.id} />
+              <input type="hidden" name="equipeId" value={equipeId} />
+              <input
+                name="nome"
+                placeholder="Nova etapa (Ex: Em Teste)"
+                className="flex-1 bg-background border border-border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500 text-foreground"
+                required
+              />
+              <button
+                disabled={isCriando}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isCriando ? 'Criando...' : 'Criar'}
+              </button>
+            </form>
+            <p className="text-[11px] text-gray-400 mt-2">
+              A etapa criada aqui fica disponível para toda a equipe e já entra automaticamente neste projeto.
+            </p>
+          </div>
+
+          <hr className="border-gray-100" />
+
+          {/* 3. CHECKLIST PARA ADICIONAR NOVAS */}
           <div>
             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
               ➕ Adicionar Etapas Disponíveis

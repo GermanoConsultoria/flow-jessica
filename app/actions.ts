@@ -976,6 +976,58 @@ export async function vincularMultiplasColunas(formData: FormData) {
     revalidatePath(`/projeto/${projetoId}`)
 }
 
+// --- CRIA ETAPA DIRETO DO PROJETO (já nasce vinculada a ele) ---
+export async function criarEtapaNoProjeto(formData: FormData) {
+    const session = await auth()
+    if (!session?.user?.email) return
+
+    const usuarioLogado = await prisma.usuario.findUnique({ where: { email: session.user.email } })
+    if (!usuarioLogado) return
+
+    const nome = formData.get('nome') as string
+    const projetoId = formData.get('projetoId') as string
+    const equipeId = formData.get('equipeId') as string
+
+    if (!nome || !projetoId || !equipeId) return
+
+    // Valida que a equipe pertence ao workspace do usuário (nunca confiar no equipeId do cliente)
+    const equipe = await prisma.equipe.findFirst({
+        where: { id: equipeId, workspace_id: usuarioLogado.workspace_id }
+    })
+    if (!equipe) return
+
+    // Valida que o projeto pertence ao mesmo workspace
+    const projeto = await prisma.projeto.findFirst({
+        where: { id: projetoId, workspace_id: usuarioLogado.workspace_id }
+    })
+    if (!projeto) return
+
+    const ultimaColuna = await prisma.projetoColuna.findFirst({
+        where: { projeto_id: projetoId },
+        orderBy: { ordem: 'desc' }
+    })
+
+    const novaColuna = await prisma.coluna.create({
+        data: {
+            nome,
+            workspace_id: usuarioLogado.workspace_id,
+            equipe_id: equipeId
+        }
+    })
+
+    await prisma.projetoColuna.create({
+        data: {
+            projeto_id: projetoId,
+            coluna_id: novaColuna.id,
+            ordem: (ultimaColuna?.ordem ?? 0) + 1
+        }
+    })
+
+    revalidatePath(`/equipe/${equipeId}/projeto/${projetoId}`)
+    revalidatePath(`/configuracoes/equipes/${equipeId}`)
+    revalidatePath('/', 'layout')
+}
+
 export async function desvincularColunaDoProjeto(formData: FormData) {
     const projetoId = formData.get('projetoId') as string
     const colunaId = formData.get('colunaId') as string

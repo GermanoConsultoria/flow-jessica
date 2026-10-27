@@ -150,10 +150,11 @@ export default async function ProjetoPage({ params }: { params: Promise<{ id: st
                     />
                 )}
                 
-                <ModalConfigProjeto 
-                    projeto={projeto} 
-                    colunasDisponiveis={bibliotecaColunas} 
-                    colunasDoProjeto={projeto.colunas}     
+                <ModalConfigProjeto
+                    projeto={projeto}
+                    equipeId={equipeId}
+                    colunasDisponiveis={bibliotecaColunas}
+                    colunasDoProjeto={projeto.colunas}
                 />
                 <ModalCriarTarefa 
                     projetoId={projeto.id}
