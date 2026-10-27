@@ -167,13 +167,12 @@ model Tarefa {
   recorrencia         Recorrencia       @default(NAO)
   dias_recorrencia    String?
   dia_mes_recorrencia Int?
-  formato             String?
-  selecionar          String?
   ordem               Int               @default(0)
   anexos              Anexo[]
   comentarios         Comentario[]
   historico           HistoricoTarefa[]
   notificacoes        Notificacao[]
+  checklists          Checklist[]
   coluna              Coluna?           @relation(fields: [coluna_id], references: [id], map: "Tarefa_coluna_id_fkey")
   dificuldade         OpcaoDificuldade  @relation(fields: [dificuldade_id], references: [id], onDelete: NoAction, map: "Tarefa_dificuldade_id_fkey")
   prioridade          OpcaoPrioridade   @relation(fields: [prioridade_id], references: [id], onDelete: NoAction, map: "Tarefa_prioridade_id_fkey")
@@ -240,6 +239,29 @@ model Anexo {
   tarefa    Tarefa   @relation(fields: [tarefa_id], references: [id], onDelete: Cascade, map: "Anexo_tarefa_id_fkey")
 
   @@map("anexo")
+}
+
+model Checklist {
+  id        String          @id @default(dbgenerated("gen_random_uuid()"))
+  titulo    String
+  tarefa_id String
+  ordem     Int             @default(0)
+  dt_insert DateTime        @default(now())
+  tarefa    Tarefa          @relation(fields: [tarefa_id], references: [id], onDelete: Cascade, map: "Checklist_tarefa_id_fkey")
+  itens     ChecklistItem[]
+
+  @@map("checklist")
+}
+
+model ChecklistItem {
+  id           String    @id @default(dbgenerated("gen_random_uuid()"))
+  texto        String
+  concluido    Boolean   @default(false)
+  ordem        Int       @default(0)
+  checklist_id String
+  checklist    Checklist @relation(fields: [checklist_id], references: [id], onDelete: Cascade, map: "ChecklistItem_checklist_id_fkey")
+
+  @@map("checklist_item")
 }
 
 model PacoteTemplate {

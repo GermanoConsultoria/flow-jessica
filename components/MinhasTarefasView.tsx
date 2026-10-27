@@ -779,11 +779,6 @@ function DraggableKanbanCard({ tarefa, index, moveCard, saveOrder, onCheck, onOp
                         <span className={`text-[10px] border px-1.5 rounded uppercase font-semibold ${tarefa.concluida ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-surface-highlight border-border text-text-muted'}`}>
                             {tarefa.concluida ? 'Concluída' : (tarefa.coluna?.nome || 'A Fazer')}
                         </span>
-                        {tarefa.formato && (
-                            <span className="text-[10px] border px-1.5 rounded uppercase font-semibold bg-surface-highlight border-border text-text-muted">
-                                {tarefa.formato}
-                            </span>
-                        )}
                     </div>
                     <input type="checkbox" checked={tarefa.concluida} onChange={() => onCheck(tarefa.id, tarefa.concluida, tarefa.projeto_id)} onClick={(e) => e.stopPropagation()} className="w-4 h-4 rounded border-gray-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer bg-surface" />
                 </div>

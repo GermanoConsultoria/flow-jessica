@@ -11,12 +11,6 @@ function validateKey(req: NextRequest) {
   return new URL(req.url).searchParams.get('api_key') === API_KEY
 }
 
-const FORMATO_MAP: Record<string, string> = {
-  reels: 'REELS', carrossel: 'CARROSSEL', carrosseis: 'CARROSSEL',
-  estático: 'ÚNICO', estatico: 'ÚNICO', único: 'ÚNICO', unico: 'ÚNICO',
-}
-const FUNIL_MAP: Record<string, string> = { topo: 'TOPO', meio: 'MEIO', fundo: 'FUNDO' }
-
 const TOOLS = [
   {
     name: 'listar_projetos',
@@ -38,15 +32,13 @@ const TOOLS = [
             properties: {
               titulo: { type: 'string' },
               data_postagem: { type: 'string', description: 'Formato YYYY-MM-DD.' },
-              formato: { type: 'string', enum: ['Reels', 'Carrossel', 'Estático'] },
-              funil: { type: 'string', enum: ['TOPO', 'MEIO', 'FUNDO'] },
               legenda: { type: 'string' },
               roteiro: { type: 'string' },
               orientacoes_gravacao: { type: 'string' },
               orientacoes_design: { type: 'string' },
               link_referencia: { type: 'string' },
             },
-            required: ['titulo', 'data_postagem', 'formato', 'funil'],
+            required: ['titulo', 'data_postagem'],
           },
         },
       },
@@ -121,8 +113,6 @@ export async function POST(req: NextRequest) {
         tarefas: Array<{
           titulo: string
           data_postagem: string
-          formato: string
-          funil: string
           legenda?: string
           roteiro?: string
           orientacoes_gravacao?: string
@@ -184,8 +174,6 @@ export async function POST(req: NextRequest) {
               prioridade_id: prioridade.id,
               dificuldade_id: dificuldade.id,
               dt_vencimento: item.data_postagem ? new Date(`${item.data_postagem}T12:00:00-03:00`) : null,
-              formato: FORMATO_MAP[item.formato?.toLowerCase()?.trim()] ?? null,
-              selecionar: FUNIL_MAP[item.funil?.toLowerCase()?.trim()] ?? null,
               recorrencia: 'NAO',
               ordem: 0,
             },

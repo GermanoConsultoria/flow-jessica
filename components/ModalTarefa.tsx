@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect, ClipboardEvent } from 'react'
 import { toast } from 'sonner'
-import { atualizarTarefa, excluirTarefa, adicionarComentario, excluirAnexo, concluirTarefaComComentario, getTarefaCompleta } from '@/app/actions'
+import { atualizarTarefa, excluirTarefa, adicionarComentario, excluirAnexo, concluirTarefaComComentario, getTarefaCompleta, adicionarItemChecklist, alternarItemChecklist, removerItemChecklist, removerChecklist } from '@/app/actions'
 import { extrairHoraBRT } from '@/lib/date'
 import BotaoAnexo from '@/components/BotaoAnexo'
 import BotaoDeletar from './BotaoDeletar'
@@ -10,7 +10,7 @@ import ItemComentario from './ItemComentario'
 import ModalConclusao from './ModalConclusao'
 import { X, Loader2 } from 'lucide-react'
 import { useUploadThing } from "@/lib/uploadthing"
-import type { TarefaComRelacoes, UsuarioBasico, ProjetoComColunas, Anexo, ComentarioComUsuario, Recorrencia } from '@/types'
+import type { TarefaComRelacoes, UsuarioBasico, ProjetoComColunas, Anexo, ComentarioComUsuario, Recorrencia, ChecklistComItens } from '@/types'
 
 interface Props {
     tarefa: TarefaComRelacoes
@@ -35,9 +35,9 @@ export default function ModalTarefa({ tarefa, isOpen, onClose, usuarios, projeto
     const [usuarioId, setUsuarioId] = useState('')
     const [dtVencimento, setDtVencimento] = useState('')
     const [horaVencimento, setHoraVencimento] = useState('')
-    const [formato, setFormato] = useState('')
-    const [selecionar, setSelecionar] = useState('')
     const [listaAnexos, setListaAnexos] = useState<Anexo[]>([])
+    const [listaChecklists, setListaChecklists] = useState<ChecklistComItens[]>([])
+    const [novoItemTexto, setNovoItemTexto] = useState<Record<string, string>>({})
     const [colunaId, setColunaId] = useState(tarefa?.coluna_id || '')
     const [recorrencia, setRecorrencia] = useState<Recorrencia>(tarefa?.recorrencia || 'NAO')
     const [diasRecorrencia, setDiasRecorrencia] = useState<number[]>(
@@ -86,11 +86,13 @@ export default function ModalTarefa({ tarefa, isOpen, onClose, usuarios, projeto
             setDiaMesRecorrencia(tarefa.dia_mes_recorrencia || 1)
             setListaAnexos([])
             setListaComentarios([])
+            setListaChecklists([])
 
             setIsLoadingDetalhes(true)
             getTarefaCompleta(tarefa.id).then(completa => {
                 if (!completa) return
                 setListaAnexos(completa.anexos || [])
+                setListaChecklists((completa.checklists || []) as unknown as ChecklistComItens[])
                 const ordenados = [...(completa.comentarios || [])].sort((a, b) =>
                     new Date(b.dt_insert).getTime() - new Date(a.dt_insert).getTime()
                 )
@@ -105,8 +107,6 @@ export default function ModalTarefa({ tarefa, isOpen, onClose, usuarios, projeto
                 setDtVencimento('')
                 setHoraVencimento('')
             }
-            setFormato(tarefa.formato || '')
-            setSelecionar(tarefa.selecionar || '')
         }
     }, [isOpen, tarefa])
 
@@ -298,8 +298,6 @@ export default function ModalTarefa({ tarefa, isOpen, onClose, usuarios, projeto
                     ? diasRecorrencia.sort((a, b) => a - b).join(',')
                     : null,
                 dia_mes_recorrencia: recorrencia === 'MENSALMENTE' ? diaMesRecorrencia : null,
-                formato: formato || null,
-                selecionar: selecionar || null,
             }, tarefa.projeto_id)
 
             if (resultado && !resultado.success) {
@@ -489,34 +487,6 @@ export default function ModalTarefa({ tarefa, isOpen, onClose, usuarios, projeto
                                 <span className="text-sm font-medium text-foreground">{tarefa.dificuldade?.nome || 'Média'}</span>
                             )}
                         </div>
-                        <div className="col-span-2 sm:col-span-1">
-                            <label className="block text-[10px] font-bold text-text-muted uppercase mb-1">Formato</label>
-                            {modoEdicao ? (
-                                <select value={formato} onChange={e => setFormato(e.target.value)} className="w-full bg-surface border border-border rounded px-2 py-1 text-sm text-foreground">
-                                    <option value="">--</option>
-                                    <option value="REELS">Reels</option>
-                                    <option value="CARROSSEL">Carrossel</option>
-                                    <option value="ÚNICO">Único</option>
-                                    <option value="STORIES">Stories</option>
-                                    <option value="FOTO">Foto</option>
-                                </select>
-                            ) : (
-                                <span className="text-sm font-medium text-foreground">{tarefa.formato || '--'}</span>
-                            )}
-                        </div>
-                        <div className="col-span-2 sm:col-span-1">
-                            <label className="block text-[10px] font-bold text-text-muted uppercase mb-1">Funil</label>
-                            {modoEdicao ? (
-                                <select value={selecionar} onChange={e => setSelecionar(e.target.value)} className="w-full bg-surface border border-border rounded px-2 py-1 text-sm text-foreground">
-                                    <option value="">--</option>
-                                    <option value="TOPO">Topo</option>
-                                    <option value="MEIO">Meio</option>
-                                    <option value="FUNDO">Fundo</option>
-                                </select>
-                            ) : (
-                                <span className="text-sm font-medium text-foreground">{tarefa.selecionar || '--'}</span>
-                            )}
-                        </div>
                     </div>
 
                     {/* DESCRIÇÃO */}
@@ -535,6 +505,93 @@ export default function ModalTarefa({ tarefa, isOpen, onClose, usuarios, projeto
                             </div>
                         )}
                     </div>
+
+                    {/* CHECKLISTS */}
+                    {listaChecklists.map((checklist) => {
+                        const concluidos = checklist.itens.filter(i => i.concluido).length
+                        return (
+                            <div key={checklist.id} className="border-t border-border pt-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                                        ✅ {checklist.titulo}
+                                        {checklist.itens.length > 0 && (
+                                            <span className="bg-surface-highlight px-2 py-0.5 rounded-full text-xs text-text-muted">{concluidos}/{checklist.itens.length}</span>
+                                        )}
+                                    </h3>
+                                    <button
+                                        onClick={async () => {
+                                            setListaChecklists(curr => curr.filter(c => c.id !== checklist.id))
+                                            await removerChecklist(checklist.id)
+                                        }}
+                                        className="text-text-muted hover:text-red-500 text-xs"
+                                        title="Remover checklist"
+                                    >
+                                        🗑️
+                                    </button>
+                                </div>
+
+                                <div className="space-y-1.5 mb-3">
+                                    {checklist.itens.map(item => (
+                                        <div key={item.id} className="flex items-center gap-2 group">
+                                            <input
+                                                type="checkbox"
+                                                checked={item.concluido}
+                                                onChange={async (e) => {
+                                                    const concluido = e.target.checked
+                                                    setListaChecklists(curr => curr.map(c => c.id === checklist.id
+                                                        ? { ...c, itens: c.itens.map(i => i.id === item.id ? { ...i, concluido } : i) }
+                                                        : c))
+                                                    await alternarItemChecklist(item.id, concluido)
+                                                }}
+                                                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                            />
+                                            <span className={`text-sm flex-1 ${item.concluido ? 'line-through text-text-muted' : 'text-foreground'}`}>{item.texto}</span>
+                                            <button
+                                                onClick={async () => {
+                                                    setListaChecklists(curr => curr.map(c => c.id === checklist.id
+                                                        ? { ...c, itens: c.itens.filter(i => i.id !== item.id) }
+                                                        : c))
+                                                    await removerItemChecklist(item.id)
+                                                }}
+                                                className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-red-500 text-xs transition-opacity"
+                                                title="Remover item"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {checklist.itens.length === 0 && (
+                                        <p className="text-xs text-text-muted italic">Nenhum item ainda.</p>
+                                    )}
+                                </div>
+
+                                <form
+                                    onSubmit={async (e) => {
+                                        e.preventDefault()
+                                        const texto = (novoItemTexto[checklist.id] || '').trim()
+                                        if (!texto) return
+                                        setNovoItemTexto(prev => ({ ...prev, [checklist.id]: '' }))
+                                        const itemOtimista = { id: `tmp-${Date.now()}`, texto, concluido: false, ordem: checklist.itens.length, checklist_id: checklist.id }
+                                        setListaChecklists(curr => curr.map(c => c.id === checklist.id
+                                            ? { ...c, itens: [...c.itens, itemOtimista] }
+                                            : c))
+                                        await adicionarItemChecklist(checklist.id, texto)
+                                    }}
+                                    className="flex gap-2"
+                                >
+                                    <input
+                                        value={novoItemTexto[checklist.id] || ''}
+                                        onChange={e => setNovoItemTexto(prev => ({ ...prev, [checklist.id]: e.target.value }))}
+                                        placeholder="Adicionar item..."
+                                        className="flex-1 bg-surface border border-border rounded-lg px-3 py-1.5 text-sm text-foreground focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    />
+                                    <button type="submit" className="text-xs font-medium text-indigo-500 hover:text-indigo-600 px-2">
+                                        Adicionar
+                                    </button>
+                                </form>
+                            </div>
+                        )
+                    })}
 
                     {/* ANEXOS */}
                     <div className="border-t border-border pt-4">
