@@ -55,13 +55,12 @@ export default function EquipeTopbar({ equipeAtual, minhasEquipes, botaoMenu, us
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {botaoMenu}
           <div className="hidden sm:flex items-center gap-2">
-            <div className="relative w-24 h-9">
+            <div className="relative w-12 h-12">
               <Image
-                src="/flow-sem-fundo.png"
-                alt="Flow"
+                src="/logo-jessica.png"
+                alt="Jéssica Casciano Assessoria Contábil"
                 fill
                 className="object-contain object-left"
-                style={theme === 'light' ? { filter: 'drop-shadow(0 0 3px rgba(0,0,0,0.55))' } : undefined}
                 priority
               />
             </div>

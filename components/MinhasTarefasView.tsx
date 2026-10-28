@@ -36,6 +36,7 @@ interface Props {
   usuarioLogadoId: string
   usuarioLogadoRole?: string
   defaultStatusFilter?: string
+  defaultUsuarioFilter?: string
 }
 
 const ItemTypes = {
@@ -123,7 +124,8 @@ export default function MinhasTarefasView({
     esconderFiltroProjeto = false,
     usuarioLogadoId,
     usuarioLogadoRole,
-    defaultStatusFilter = 'TODOS'
+    defaultStatusFilter = 'TODOS',
+    defaultUsuarioFilter = usuarioLogadoId
 }: Props) {
   const getColunaId = (t: TarefaComRelacoes) => {
       return t.coluna_id || t.coluna?.id || null
@@ -155,7 +157,7 @@ export default function MinhasTarefasView({
   const [busca, setBusca] = useState('')
   const [projetoId, setProjetoId] = useState('')
   const [prioridadeFilter, setPrioridadeFilter] = useState('')
-  const [usuarioId, setUsuarioId] = useState(usuarioLogadoId)
+  const [usuarioId, setUsuarioId] = useState(defaultUsuarioFilter)
   const [statusFilter, setStatusFilter] = useState(defaultStatusFilter)
 
   const formatarData = (dataOriginal: Date | string | null) => {
@@ -701,6 +703,7 @@ function KanbanColumn({
                             key={t.id}
                             index={idx}
                             tarefa={t}
+                            tipo={tipo}
                             onCheck={onCheck}
                             onOpen={onOpen}
                             isPending={isPending}
@@ -716,6 +719,7 @@ function KanbanColumn({
 interface DraggableKanbanCardProps {
     tarefa: TarefaComRelacoes
     index: number
+    tipo: 'PROJETO' | 'COLUNA'
     moveCard: (dragIndex: number, hoverIndex: number) => void
     saveOrder: () => void
     onCheck: (tarefaId: string, concluidaAtual: boolean, projetoId: string) => void
@@ -723,7 +727,7 @@ interface DraggableKanbanCardProps {
     isPending: boolean
 }
 
-function DraggableKanbanCard({ tarefa, index, moveCard, saveOrder, onCheck, onOpen, isPending }: DraggableKanbanCardProps) {
+function DraggableKanbanCard({ tarefa, index, tipo, moveCard, saveOrder, onCheck, onOpen, isPending }: DraggableKanbanCardProps) {
     const ref = useRef<HTMLDivElement>(null)
 
     // Refs estáveis — mantém o callback mais recente sem re-registrar os targets DnD
@@ -776,16 +780,13 @@ function DraggableKanbanCard({ tarefa, index, moveCard, saveOrder, onCheck, onOp
             <div className="pl-2">
                 <div className="flex justify-between items-start mb-1">
                     <div className="flex items-center gap-1">
-                        <span className={`text-[10px] border px-1.5 rounded uppercase font-semibold ${tarefa.concluida ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-surface-highlight border-border text-text-muted'}`}>
-                            {tarefa.concluida ? 'Concluída' : (tarefa.coluna?.nome || 'A Fazer')}
-                        </span>
-                        {tarefa.formato && (
-                            <span className="text-[10px] border px-1.5 rounded uppercase font-semibold bg-surface-highlight border-border text-text-muted">
-                                {tarefa.formato}
+                        {(tarefa.concluida || tipo !== 'COLUNA') && (
+                            <span className={`text-[10px] border px-1.5 rounded uppercase font-semibold ${tarefa.concluida ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-surface-highlight border-border text-text-muted'}`}>
+                                {tarefa.concluida ? 'Concluída' : (tarefa.coluna?.nome || 'A Fazer')}
                             </span>
                         )}
                     </div>
-                    <input type="checkbox" checked={tarefa.concluida} onChange={() => onCheck(tarefa.id, tarefa.concluida, tarefa.projeto_id)} onClick={(e) => e.stopPropagation()} className="w-4 h-4 rounded border-gray-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer bg-surface" />
+                    <input type="checkbox" checked={tarefa.concluida} onChange={() => onCheck(tarefa.id, tarefa.concluida, tarefa.projeto_id)} onClick={(e) => e.stopPropagation()} className={`w-4 h-4 rounded border-gray-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer bg-surface transition-opacity ${tarefa.concluida ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
                 </div>
                 <h4 className={`font-semibold text-foreground text-sm mb-2 leading-tight ${tarefa.concluida ? 'line-through text-text-muted' : ''}`}>{tarefa.titulo}</h4>
                 <div className="flex justify-between items-center text-xs text-text-muted border-t pt-2 border-border">

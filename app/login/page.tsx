@@ -10,25 +10,17 @@ export default function LoginPage() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/50 p-4 overflow-hidden">
-      
+
       {/* CARD CENTRALIZADO */}
       {/* max-h-full garante que o card nunca seja maior que a tela */}
-      <div className="w-full max-w-sm bg-surface rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-full border border-white/5">
+      <div className="w-full max-w-sm bg-surface rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-full border border-border">
         
-        {/* --- LOGO SUPERIOR (GERTECH) --- */}
-        <div className="h-36 flex justify-center items-center shrink-0 relative overflow-hidden" style={{ background: 'radial-gradient(ellipse at center, #1a4a7a 0%, #0d2d4e 50%, #081c32 100%)' }}>
-          {/* Textura orgânica via SVG noise */}
-          <svg className="absolute inset-0 w-full h-full opacity-[0.07] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-            <filter id="noise">
-              <feTurbulence type="fractalNoise" baseFrequency="0.42" numOctaves="4" stitchTiles="stitch" />
-              <feColorMatrix type="saturate" values="0" />
-            </filter>
-            <rect width="100%" height="100%" filter="url(#noise)" style={{ mixBlendMode: 'soft-light' }} />
-          </svg>
-            <div className="relative w-48 h-28 z-10">
+        {/* --- LOGO SUPERIOR (JÉSSICA CASCIANO) --- */}
+        <div className="h-36 flex justify-center items-center shrink-0 relative overflow-hidden bg-white">
+            <div className="relative w-40 h-32 z-10">
                 <Image
-                    src="/logo-gtech-sem-fundo.png"
-                    alt="Gertech"
+                    src="/logo-jessica.png"
+                    alt="Jéssica Casciano Assessoria Contábil"
                     fill
                     className="object-contain"
                     priority
@@ -41,11 +33,11 @@ export default function LoginPage() {
         <form action={dispatch} className="px-8 py-6 space-y-5 flex-1 overflow-y-auto custom-scrollbar-thin">
           
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase mb-2" htmlFor="email">
+            <label className="block text-xs font-bold text-text-muted uppercase mb-2" htmlFor="email">
               E-mail
             </label>
             <input
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-gray-500"
+              className="w-full border border-border rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               id="email"
               type="email"
               name="email"
@@ -56,11 +48,11 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase mb-2" htmlFor="password">
+            <label className="block text-xs font-bold text-text-muted uppercase mb-2" htmlFor="password">
               Senha
             </label>
             <input
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-gray-500"
+              className="w-full border border-border rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               id="password"
               type="password"
               name="password"
@@ -80,9 +72,19 @@ export default function LoginPage() {
           </div>
         </form>
 
-        {/* --- LOGO INFERIOR (FLOW) --- */}
+        {/* --- LOGOS INFERIORES (G-TECH | FLOW) --- */}
         <div className="pb-6 pt-2 flex justify-center items-center shrink-0">
-            <div className="relative w-24 h-10 opacity-90">
+          <div className="flex items-center gap-3 bg-black rounded-xl px-5 py-3">
+            <div className="relative w-16 h-8">
+                <Image
+                    src="/logo-gtech-sem-fundo.png"
+                    alt="G-Tech"
+                    fill
+                    className="object-contain"
+                />
+            </div>
+            <span className="text-white/30 text-lg font-thin select-none">|</span>
+            <div className="relative w-24 h-10">
                 <Image
                     src="/flow-sem-fundo.png"
                     alt="Flow"
@@ -90,6 +92,7 @@ export default function LoginPage() {
                     className="object-contain"
                 />
             </div>
+          </div>
         </div>
 
       </div>

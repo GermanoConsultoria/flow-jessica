@@ -10,6 +10,7 @@ interface CardProjetoProps {
     descricao: string | null
     ativo: boolean
     imagem: string | null
+    cor?: string | null
     equipe_id?: string | null // <--- ADICIONAMOS AQUI
     _count: {
         tarefas: number
@@ -28,12 +29,13 @@ export default function CardProjeto({ projeto }: CardProjetoProps) {
   }
 
   return (
-    <div 
+    <div
       onClick={handleNavegar}
+      style={projeto.ativo && projeto.cor ? { borderTopColor: projeto.cor, borderTopWidth: 4 } : undefined}
       className={`
         group relative p-4 lg:p-6 rounded-xl border transition-all flex flex-col cursor-pointer
-        ${projeto.ativo 
-            ? 'bg-surface border-border hover:border-indigo-300 hover:shadow-md' 
+        ${projeto.ativo
+            ? 'bg-surface border-border hover:border-indigo-300 hover:shadow-md'
             : 'bg-surface border-gray-100 opacity-60 grayscale hover:grayscale-0'
         }
       `}

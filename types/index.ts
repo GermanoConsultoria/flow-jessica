@@ -99,8 +99,6 @@ export type Tarefa = {
   recorrencia: Recorrencia
   dias_recorrencia: string | null
   dia_mes_recorrencia: number | null
-  formato: string | null
-  selecionar: string | null
   ordem: number
   dt_vencimento: Date | string | null
   dt_conclusao: Date | string | null
@@ -146,6 +144,22 @@ export type Anexo = {
   tamanho: number
   dt_upload: Date | string
   tarefa_id: string
+}
+
+export type Checklist = {
+  id: string
+  titulo: string
+  tarefa_id: string
+  ordem: number
+  dt_insert: Date | string
+}
+
+export type ChecklistItem = {
+  id: string
+  texto: string
+  concluido: boolean
+  ordem: number
+  checklist_id: string
 }
 
 export type EquipeUsuario = {
@@ -205,6 +219,11 @@ export type HistoricoComUsuario = HistoricoTarefa & {
   usuario: UsuarioBasico | null
 }
 
+/** Checklist com seus itens */
+export type ChecklistComItens = Checklist & {
+  itens: ChecklistItem[]
+}
+
 /** Tarefa completa com todas as relações — usada no Kanban, Modal, Calendário */
 export type TarefaComRelacoes = Tarefa & {
   usuario: UsuarioBasico | null
@@ -215,6 +234,7 @@ export type TarefaComRelacoes = Tarefa & {
   comentarios: ComentarioComUsuario[]
   anexos: Anexo[]
   historico?: HistoricoComUsuario[]
+  checklists?: ChecklistComItens[]
 }
 
 /** Relação Projeto↔Coluna com ordem, como vem do banco */

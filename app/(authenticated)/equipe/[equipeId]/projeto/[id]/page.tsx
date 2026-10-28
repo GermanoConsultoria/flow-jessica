@@ -150,10 +150,11 @@ export default async function ProjetoPage({ params }: { params: Promise<{ id: st
                     />
                 )}
                 
-                <ModalConfigProjeto 
-                    projeto={projeto} 
-                    colunasDisponiveis={bibliotecaColunas} 
-                    colunasDoProjeto={projeto.colunas}     
+                <ModalConfigProjeto
+                    projeto={projeto}
+                    equipeId={equipeId}
+                    colunasDisponiveis={bibliotecaColunas}
+                    colunasDoProjeto={projeto.colunas}
                 />
                 <ModalCriarTarefa 
                     projetoId={projeto.id}
@@ -186,6 +187,7 @@ export default async function ProjetoPage({ params }: { params: Promise<{ id: st
             usuarioLogadoId={usuarioLogado.id}
             usuarioLogadoRole={usuarioLogado.role}
             defaultStatusFilter="PENDENTE"
+            defaultUsuarioFilter=""
           />
         )}
 

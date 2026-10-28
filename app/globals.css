@@ -2,16 +2,16 @@
 @source "../node_modules/@uploadthing/react/dist";
 
 @theme {
-  /* --- PALETA DE CORES SUAVE (ZINC) --- */
-  --color-background: #18181b; 
-  --color-surface: #27272a; 
-  --color-surface-highlight: #3f3f46;
-  --color-border: #3f3f46;
+  /* --- PALETA DE CORES CLARA (PADRÃO) --- */
+  --color-background: #f4f4f5;
+  --color-surface: #ffffff;
+  --color-surface-highlight: #e4e4e7;
+  --color-border: #d4d4d8;
 
-  /* --- TEXTOS (CONTRASTE CORRIGIDO) --- */
-  --color-foreground: #f4f4f5; 
-  --color-text-muted: #a1a1aa; 
-  
+  /* --- TEXTOS --- */
+  --color-foreground: #18181b;
+  --color-text-muted: #71717a;
+
   /* --- ACENTOS (INDIGO MAIS SUAVE) --- */
   --color-primary: #6366f1;
   --color-primary-hover: #818cf8;
@@ -38,14 +38,14 @@ html {
   }
 }
 
-/* --- TEMA CLARO --- */
-html.light-theme {
-  --color-background: #f4f4f5;
-  --color-surface: #ffffff;
-  --color-surface-highlight: #e4e4e7;
-  --color-border: #d4d4d8;
-  --color-foreground: #18181b;
-  --color-text-muted: #71717a;
+/* --- TEMA ESCURO --- */
+html.dark-theme {
+  --color-background: #18181b;
+  --color-surface: #27272a;
+  --color-surface-highlight: #3f3f46;
+  --color-border: #3f3f46;
+  --color-foreground: #f4f4f5;
+  --color-text-muted: #a1a1aa;
 }
 
 /* --- RESET GLOBAL E ESTILIZAÇÃO --- */

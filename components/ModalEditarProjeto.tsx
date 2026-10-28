@@ -8,6 +8,7 @@ import BotaoDeletar from './BotaoDeletar'
 import { useRouter } from 'next/navigation'
 import type { ProjetoBasico } from '@/types'
 import { extrairDataYMD } from '@/lib/date'
+import SeletorCorProjeto from './SeletorCorProjeto'
 
 interface Props {
   projeto: ProjetoBasico & {
@@ -19,6 +20,7 @@ interface Props {
     motivo_pausa?: string | null
     equipe_id?: string | null
     usuario_id?: string | null
+    cor?: string | null
     data_inicio?: Date | string | null
     data_prevista_entrega?: Date | string | null
   }
@@ -102,6 +104,11 @@ export default function ModalEditarProjeto({ projeto }: Props) {
                 <div>
                     <label className="block text-xs font-bold text-text-muted uppercase mb-1">Descrição</label>
                     <textarea name="descricao" rows={2} defaultValue={projeto.descricao || ''} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none text-foreground" />
+                </div>
+
+                <div>
+                    <label className="block text-xs font-bold text-text-muted uppercase mb-2">Cor do Card</label>
+                    <SeletorCorProjeto name="cor" defaultValue={projeto.cor} />
                 </div>
 
                 <div>

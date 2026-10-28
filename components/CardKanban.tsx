@@ -63,12 +63,6 @@ export default function CardKanban({ tarefa, usuarios, projetos, usuarioId }: Ca
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${corPrioridade[tarefa.prioridade.nome as keyof typeof corPrioridade] || 'bg-surface/50 text-gray-600'}`}>
               {tarefa.prioridade.nome}
             </span>
-            {/* Badge de Formato */}
-            {tarefa.formato && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-purple-100 text-purple-700 border-purple-200">
-                {tarefa.formato}
-              </span>
-            )}
           </div>
 
           <input

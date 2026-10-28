@@ -4,8 +4,6 @@ import { prisma } from '@/lib/prisma'
 interface TarefaCronograma {
   titulo: string
   data_postagem: string        // "YYYY-MM-DD"
-  formato: string              // "Reels" | "Carrossel" | "Estático"
-  funil: string                // "TOPO" | "MEIO" | "FUNDO"
   legenda?: string
   link_referencia?: string
   orientacoes_gravacao?: string
@@ -16,24 +14,6 @@ interface TarefaCronograma {
 interface Body {
   projeto_id: string
   tarefas: TarefaCronograma[]
-}
-
-const FORMATO_MAP: Record<string, string> = {
-  'reels': 'REELS',
-  'carrossel': 'CARROSSEL',
-  'carrosseis': 'CARROSSEL',
-  'estático': 'ÚNICO',
-  'estatico': 'ÚNICO',
-  'único': 'ÚNICO',
-  'unico': 'ÚNICO',
-  'stories': 'STORIES',
-  'foto': 'FOTO',
-}
-
-const FUNIL_MAP: Record<string, string> = {
-  'topo': 'TOPO',
-  'meio': 'MEIO',
-  'fundo': 'FUNDO',
 }
 
 export async function POST(req: NextRequest) {
@@ -100,9 +80,6 @@ export async function POST(req: NextRequest) {
       if (item.link_referencia) partes.push(`🔗 LINK DE REFERÊNCIA\n\n${item.link_referencia}`)
       const descricao = partes.join('\n\n---\n\n') || null
 
-      const formato = FORMATO_MAP[item.formato?.toLowerCase()?.trim()] ?? null
-      const funil = FUNIL_MAP[item.funil?.toLowerCase()?.trim()] ?? null
-
       // Parse da data — espera YYYY-MM-DD
       const dtVencimento = item.data_postagem ? new Date(`${item.data_postagem}T12:00:00-03:00`) : null
 
@@ -115,8 +92,6 @@ export async function POST(req: NextRequest) {
           prioridade_id: prioridade.id,
           dificuldade_id: dificuldade.id,
           dt_vencimento: dtVencimento,
-          formato,
-          selecionar: funil,
           recorrencia: 'NAO',
           ordem: 0,
         }

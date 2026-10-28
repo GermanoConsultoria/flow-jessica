@@ -2,22 +2,15 @@ import { prisma } from '@/lib/prisma'
 import DashboardTarefas from '@/components/DashboardTarefas'
 import AvatarProjeto from '@/components/AvatarProjeto'
 import Link from 'next/link'
-import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { hojeNoFusoBrasil } from '@/lib/date'
+import { getUsuarioAtual } from '@/lib/usuario-atual'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export default async function Home() {
-  const session = await auth()
-  if (!session?.user?.email) redirect('/login')
-
-  const usuario = await prisma.usuario.findUnique({
-    where: { email: session.user.email },
-    include: { equipes: { include: { equipe: true } } }
-  })
-
+  const usuario = await getUsuarioAtual()
   if (!usuario) redirect('/login')
 
   const equipeVisual = usuario.equipes[0]?.equipe ?? null
@@ -33,13 +26,13 @@ export default async function Home() {
       where: { usuario_id: usuario.id, concluida: false, dt_vencimento: { lt: hojeUTC }, projeto: { ativo: true, workspace_id: usuario.workspace_id } },
       take: 50,
       orderBy: { dt_vencimento: 'asc' },
-      include: { projeto: true, usuario: true, prioridade: true, dificuldade: true, comentarios: { include: { usuario: true }, orderBy: { dt_insert: 'asc' } } }
+      include: { projeto: true, usuario: true, prioridade: true, dificuldade: true }
     }),
     prisma.tarefa.findMany({
       where: { usuario_id: usuario.id, concluida: false, dt_vencimento: { gte: hojeUTC }, projeto: { ativo: true, workspace_id: usuario.workspace_id } },
       take: 50,
       orderBy: { dt_vencimento: 'asc' },
-      include: { projeto: true, usuario: true, prioridade: true, dificuldade: true, comentarios: { include: { usuario: true }, orderBy: { dt_insert: 'asc' } } }
+      include: { projeto: true, usuario: true, prioridade: true, dificuldade: true }
     }),
     prisma.projeto.findMany({
       where: { ativo: true, workspace_id: usuario.workspace_id },

@@ -146,8 +146,6 @@ interface CriarTarefaDTO {
   recorrencia?: Recorrencia
   dias_recorrencia?: string | null
   dia_mes_recorrencia?: number | null
-  formato?: string | null
-  selecionar?: string | null
 }
 
 export async function criarTarefa(data: CriarTarefaDTO): Promise<ActionResult<{ id: string }>> {
@@ -181,8 +179,6 @@ export async function criarTarefa(data: CriarTarefaDTO): Promise<ActionResult<{ 
         recorrencia: data.recorrencia || 'NAO',
         dias_recorrencia: data.dias_recorrencia ?? null,
         dia_mes_recorrencia: data.dia_mes_recorrencia ?? null,
-        formato: data.formato ?? null,
-        selecionar: data.selecionar ?? null,
       },
     })
 
@@ -223,8 +219,6 @@ interface AtualizarTarefaDTO {
   recorrencia?: Recorrencia
   dias_recorrencia?: string | null
   dia_mes_recorrencia?: number | null
-  formato?: string | null
-  selecionar?: string | null
 }
 
 export async function atualizarTarefa(
@@ -265,8 +259,6 @@ export async function atualizarTarefa(
         recorrencia: data.recorrencia,
         dias_recorrencia: data.dias_recorrencia ?? null,
         dia_mes_recorrencia: data.dia_mes_recorrencia ?? null,
-        formato: data.formato ?? null,
-        selecionar: data.selecionar ?? null,
       }
     })
 
@@ -701,7 +693,6 @@ export async function concluirETransferirTarefa(
         prioridade_id: tarefa.prioridade_id,
         dificuldade_id: tarefa.dificuldade_id,
         dt_vencimento: tarefa.dt_vencimento,
-        formato: tarefa.formato,
         concluida: false
       }
     })
@@ -874,6 +865,7 @@ export async function criarProjeto(formData: FormData): Promise<ActionResult<{ i
   const responsavelId = (formData.get('responsavelId') as string) || null
   const dataInicio = formData.get('data_inicio') as string
   const dataPrevistaEntrega = formData.get('data_prevista_entrega') as string
+  const cor = (formData.get('cor') as string) || null
 
   const validacao = schemaCriarProjeto.safeParse({ nome, descricao })
   if (!validacao.success) {
@@ -893,6 +885,7 @@ export async function criarProjeto(formData: FormData): Promise<ActionResult<{ i
           workspace_id: workspaceId,
           usuario_id: responsavelId || usuarioId,
           equipe_id: equipeId || null,
+          cor,
           data_inicio: dataInicio ? new Date(dataInicio) : null,
           data_prevista_entrega: dataPrevistaEntrega ? new Date(dataPrevistaEntrega) : null,
       }
@@ -974,6 +967,58 @@ export async function vincularMultiplasColunas(formData: FormData) {
     }
 
     revalidatePath(`/projeto/${projetoId}`)
+}
+
+// --- CRIA ETAPA DIRETO DO PROJETO (já nasce vinculada a ele) ---
+export async function criarEtapaNoProjeto(formData: FormData) {
+    const session = await auth()
+    if (!session?.user?.email) return
+
+    const usuarioLogado = await prisma.usuario.findUnique({ where: { email: session.user.email } })
+    if (!usuarioLogado) return
+
+    const nome = formData.get('nome') as string
+    const projetoId = formData.get('projetoId') as string
+    const equipeId = formData.get('equipeId') as string
+
+    if (!nome || !projetoId || !equipeId) return
+
+    // Valida que a equipe pertence ao workspace do usuário (nunca confiar no equipeId do cliente)
+    const equipe = await prisma.equipe.findFirst({
+        where: { id: equipeId, workspace_id: usuarioLogado.workspace_id }
+    })
+    if (!equipe) return
+
+    // Valida que o projeto pertence ao mesmo workspace
+    const projeto = await prisma.projeto.findFirst({
+        where: { id: projetoId, workspace_id: usuarioLogado.workspace_id }
+    })
+    if (!projeto) return
+
+    const ultimaColuna = await prisma.projetoColuna.findFirst({
+        where: { projeto_id: projetoId },
+        orderBy: { ordem: 'desc' }
+    })
+
+    const novaColuna = await prisma.coluna.create({
+        data: {
+            nome,
+            workspace_id: usuarioLogado.workspace_id,
+            equipe_id: equipeId
+        }
+    })
+
+    await prisma.projetoColuna.create({
+        data: {
+            projeto_id: projetoId,
+            coluna_id: novaColuna.id,
+            ordem: (ultimaColuna?.ordem ?? 0) + 1
+        }
+    })
+
+    revalidatePath(`/equipe/${equipeId}/projeto/${projetoId}`)
+    revalidatePath(`/configuracoes/equipes/${equipeId}`)
+    revalidatePath('/', 'layout')
 }
 
 export async function desvincularColunaDoProjeto(formData: FormData) {
@@ -1377,6 +1422,7 @@ export async function editarProjeto(formData: FormData): Promise<ActionResult> {
   const responsavelId = formData.get('responsavelId') as string | null
   const dataInicio = formData.get('data_inicio') as string
   const dataPrevistaEntrega = formData.get('data_prevista_entrega') as string
+  const cor = (formData.get('cor') as string) || null
 
   if (!id || !nome) return { success: false, error: 'Dados obrigatórios ausentes.' }
 
@@ -1397,6 +1443,7 @@ export async function editarProjeto(formData: FormData): Promise<ActionResult> {
             tipo_integracao: tipoIntegracao,
             status_cliente: statusCliente,
             motivo_pausa: statusCliente === 'PAUSADO' ? motivoPausa : null,
+            cor,
             data_inicio: dataInicio ? new Date(dataInicio) : null,
             data_prevista_entrega: dataPrevistaEntrega ? new Date(dataPrevistaEntrega) : null,
             ...(responsavelId && { usuario_id: responsavelId })
@@ -1406,6 +1453,7 @@ export async function editarProjeto(formData: FormData): Promise<ActionResult> {
     if (equipeId) {
         revalidatePath(`/equipe/${equipeId}/projeto/${id}`)
         revalidatePath(`/equipe/${equipeId}/portfolio`)
+        revalidatePath(`/equipe/${equipeId}/projetos`)
     }
     return { success: true, data: undefined }
   } catch {
@@ -2688,10 +2736,72 @@ export async function getTarefaCompleta(tarefaId: string) {
       dificuldade: true,
       anexos: true,
       comentarios: { include: { usuario: true }, orderBy: { dt_insert: 'desc' } },
+      checklists: { include: { itens: { orderBy: { ordem: 'asc' } } }, orderBy: { dt_insert: 'asc' } },
       projeto: true,
     }
   })
   return tarefa
+}
+
+// --- CHECKLIST ---
+
+export async function criarChecklistComItens(tarefaId: string, titulo: string, itensTexto: string[]) {
+  if (!tarefaId || !titulo.trim()) return
+
+  await prisma.checklist.create({
+    data: {
+      titulo: titulo.trim(),
+      tarefa_id: tarefaId,
+      itens: {
+        create: itensTexto
+          .map(t => t.trim())
+          .filter(t => t.length > 0)
+          .map((texto, index) => ({ texto, ordem: index }))
+      }
+    }
+  })
+
+  revalidatePath('/')
+}
+
+export async function adicionarItemChecklist(checklistId: string, texto: string) {
+  if (!checklistId || !texto.trim()) return
+
+  const ultimoItem = await prisma.checklistItem.findFirst({
+    where: { checklist_id: checklistId },
+    orderBy: { ordem: 'desc' }
+  })
+
+  await prisma.checklistItem.create({
+    data: {
+      checklist_id: checklistId,
+      texto: texto.trim(),
+      ordem: (ultimoItem?.ordem ?? -1) + 1
+    }
+  })
+
+  revalidatePath('/')
+}
+
+export async function alternarItemChecklist(itemId: string, concluido: boolean) {
+  if (!itemId) return
+  await prisma.checklistItem.update({
+    where: { id: itemId },
+    data: { concluido }
+  })
+  revalidatePath('/')
+}
+
+export async function removerItemChecklist(itemId: string) {
+  if (!itemId) return
+  await prisma.checklistItem.delete({ where: { id: itemId } })
+  revalidatePath('/')
+}
+
+export async function removerChecklist(checklistId: string) {
+  if (!checklistId) return
+  await prisma.checklist.delete({ where: { id: checklistId } })
+  revalidatePath('/')
 }
 
 export async function getProjetosLevesParaModal(workspaceId: string) {

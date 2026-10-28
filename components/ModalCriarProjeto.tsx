@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { criarProjeto, getColunasDaEquipe, getUsuariosDoWorkspace } from '@/app/actions'
 import { toast } from 'sonner'
+import SeletorCorProjeto from './SeletorCorProjeto'
 
 interface Props {
   isOpen: boolean
@@ -62,6 +63,11 @@ export default function ModalCriarProjeto({ isOpen, onClose, equipeId }: Props) 
           <div>
              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Descrição</label>
              <textarea name="descricao" rows={2} placeholder="Detalhes adicionais..." className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-background text-foreground" />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Cor do Card</label>
+            <SeletorCorProjeto name="cor" />
           </div>
 
           <div>
