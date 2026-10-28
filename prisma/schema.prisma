@@ -116,6 +116,7 @@ model Projeto {
   usuario_id             String
   ativo                  Boolean         @default(true)
   imagem                 String?
+  cor                    String?
   equipe_id              String?
   fase_macro             String?
   erp                    String?

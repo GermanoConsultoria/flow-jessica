@@ -865,6 +865,7 @@ export async function criarProjeto(formData: FormData): Promise<ActionResult<{ i
   const responsavelId = (formData.get('responsavelId') as string) || null
   const dataInicio = formData.get('data_inicio') as string
   const dataPrevistaEntrega = formData.get('data_prevista_entrega') as string
+  const cor = (formData.get('cor') as string) || null
 
   const validacao = schemaCriarProjeto.safeParse({ nome, descricao })
   if (!validacao.success) {
@@ -884,6 +885,7 @@ export async function criarProjeto(formData: FormData): Promise<ActionResult<{ i
           workspace_id: workspaceId,
           usuario_id: responsavelId || usuarioId,
           equipe_id: equipeId || null,
+          cor,
           data_inicio: dataInicio ? new Date(dataInicio) : null,
           data_prevista_entrega: dataPrevistaEntrega ? new Date(dataPrevistaEntrega) : null,
       }
@@ -1420,6 +1422,7 @@ export async function editarProjeto(formData: FormData): Promise<ActionResult> {
   const responsavelId = formData.get('responsavelId') as string | null
   const dataInicio = formData.get('data_inicio') as string
   const dataPrevistaEntrega = formData.get('data_prevista_entrega') as string
+  const cor = (formData.get('cor') as string) || null
 
   if (!id || !nome) return { success: false, error: 'Dados obrigatórios ausentes.' }
 
@@ -1440,6 +1443,7 @@ export async function editarProjeto(formData: FormData): Promise<ActionResult> {
             tipo_integracao: tipoIntegracao,
             status_cliente: statusCliente,
             motivo_pausa: statusCliente === 'PAUSADO' ? motivoPausa : null,
+            cor,
             data_inicio: dataInicio ? new Date(dataInicio) : null,
             data_prevista_entrega: dataPrevistaEntrega ? new Date(dataPrevistaEntrega) : null,
             ...(responsavelId && { usuario_id: responsavelId })
@@ -1449,6 +1453,7 @@ export async function editarProjeto(formData: FormData): Promise<ActionResult> {
     if (equipeId) {
         revalidatePath(`/equipe/${equipeId}/projeto/${id}`)
         revalidatePath(`/equipe/${equipeId}/portfolio`)
+        revalidatePath(`/equipe/${equipeId}/projetos`)
     }
     return { success: true, data: undefined }
   } catch {
