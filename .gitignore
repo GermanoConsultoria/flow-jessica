@@ -44,3 +44,6 @@ next-env.d.ts
 
 # Claude Code instructions (local only)
 CLAUDE.md
+
+# backups de scripts de manutenção pontual (contem dados sensiveis de clientes)
+backup-comentarios-*.json

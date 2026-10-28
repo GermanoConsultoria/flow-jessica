@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { vincularMultiplasColunas, desvincularColunaDoProjeto, criarEtapaNoProjeto } from '@/app/actions'
+import { toast } from 'sonner'
 import type { ProjetoBasico, ColunaBasica } from '@/types'
 
 interface ProjetoColuna {
@@ -104,9 +105,21 @@ export default function ModalConfigProjeto({ projeto, equipeId, colunasDisponive
               ref={formCriarEtapaRef}
               action={async (formData) => {
                 setIsCriando(true)
-                await criarEtapaNoProjeto(formData)
+                const resultado = await criarEtapaNoProjeto(formData)
                 setIsCriando(false)
                 formCriarEtapaRef.current?.reset()
+
+                if (!resultado.success) {
+                  toast.error(resultado.error)
+                  return
+                }
+                if (resultado.data.jaNoProjeto) {
+                  toast.info('Essa etapa já está neste projeto.')
+                } else if (resultado.data.reused) {
+                  toast.success('Etapa já existia na equipe — foi reaproveitada e adicionada a este projeto.')
+                } else {
+                  toast.success('Etapa criada.')
+                }
               }}
               className="flex gap-3"
             >

@@ -824,7 +824,7 @@ export async function criarColuna(formData: FormData) {
   const usuarioLogado = await prisma.usuario.findUnique({ where: { email: session.user.email } })
   if (!usuarioLogado) return
 
-  const nome = formData.get('nome') as string
+  const nome = (formData.get('nome') as string)?.trim()
   const equipeId = formData.get('equipeId') as string
 
   if (!nome || !equipeId) return
@@ -835,13 +835,20 @@ export async function criarColuna(formData: FormData) {
   })
   if (!equipe) return
 
-  await prisma.coluna.create({
-    data: {
-      nome,
-      workspace_id: usuarioLogado.workspace_id,
-      equipe_id: equipeId
-    }
+  // Evita duplicar etapa com o mesmo nome (case-insensitive) já existente na equipe
+  const colunaExistente = await prisma.coluna.findFirst({
+    where: { equipe_id: equipeId, nome: { equals: nome, mode: 'insensitive' } }
   })
+
+  if (!colunaExistente) {
+    await prisma.coluna.create({
+      data: {
+        nome,
+        workspace_id: usuarioLogado.workspace_id,
+        equipe_id: equipeId
+      }
+    })
+  }
   revalidatePath(`/configuracoes/equipes/${equipeId}`)
   revalidatePath('/', 'layout')
 }
@@ -969,49 +976,66 @@ export async function vincularMultiplasColunas(formData: FormData) {
     revalidatePath(`/projeto/${projetoId}`)
 }
 
-// --- CRIA ETAPA DIRETO DO PROJETO (já nasce vinculada a ele) ---
-export async function criarEtapaNoProjeto(formData: FormData) {
+// --- CRIA ETAPA DIRETO DO PROJETO (reaproveita se já existir na equipe, e já nasce vinculada ao projeto) ---
+export async function criarEtapaNoProjeto(formData: FormData): Promise<ActionResult<{ reused: boolean; jaNoProjeto: boolean }>> {
     const session = await auth()
-    if (!session?.user?.email) return
+    if (!session?.user?.email) return { success: false, error: 'Não autenticado.' }
 
     const usuarioLogado = await prisma.usuario.findUnique({ where: { email: session.user.email } })
-    if (!usuarioLogado) return
+    if (!usuarioLogado) return { success: false, error: 'Usuário não encontrado.' }
 
-    const nome = formData.get('nome') as string
+    const nome = (formData.get('nome') as string)?.trim()
     const projetoId = formData.get('projetoId') as string
     const equipeId = formData.get('equipeId') as string
 
-    if (!nome || !projetoId || !equipeId) return
+    if (!nome || !projetoId || !equipeId) return { success: false, error: 'Dados incompletos.' }
 
     // Valida que a equipe pertence ao workspace do usuário (nunca confiar no equipeId do cliente)
     const equipe = await prisma.equipe.findFirst({
         where: { id: equipeId, workspace_id: usuarioLogado.workspace_id }
     })
-    if (!equipe) return
+    if (!equipe) return { success: false, error: 'Equipe inválida.' }
 
     // Valida que o projeto pertence ao mesmo workspace
     const projeto = await prisma.projeto.findFirst({
         where: { id: projetoId, workspace_id: usuarioLogado.workspace_id }
     })
-    if (!projeto) return
+    if (!projeto) return { success: false, error: 'Projeto inválido.' }
+
+    // Reaproveita etapa já existente na equipe (case-insensitive) em vez de duplicar
+    let coluna = await prisma.coluna.findFirst({
+        where: { equipe_id: equipeId, nome: { equals: nome, mode: 'insensitive' } }
+    })
+    const reused = !!coluna
+
+    if (!coluna) {
+        coluna = await prisma.coluna.create({
+            data: {
+                nome,
+                workspace_id: usuarioLogado.workspace_id,
+                equipe_id: equipeId
+            }
+        })
+    }
+
+    // Se a etapa reaproveitada já estiver vinculada a este projeto, não duplica o vínculo
+    const jaVinculada = await prisma.projetoColuna.findFirst({
+        where: { projeto_id: projetoId, coluna_id: coluna.id }
+    })
+
+    if (jaVinculada) {
+        return { success: true, data: { reused, jaNoProjeto: true } }
+    }
 
     const ultimaColuna = await prisma.projetoColuna.findFirst({
         where: { projeto_id: projetoId },
         orderBy: { ordem: 'desc' }
     })
 
-    const novaColuna = await prisma.coluna.create({
-        data: {
-            nome,
-            workspace_id: usuarioLogado.workspace_id,
-            equipe_id: equipeId
-        }
-    })
-
     await prisma.projetoColuna.create({
         data: {
             projeto_id: projetoId,
-            coluna_id: novaColuna.id,
+            coluna_id: coluna.id,
             ordem: (ultimaColuna?.ordem ?? 0) + 1
         }
     })
@@ -1019,6 +1043,8 @@ export async function criarEtapaNoProjeto(formData: FormData) {
     revalidatePath(`/equipe/${equipeId}/projeto/${projetoId}`)
     revalidatePath(`/configuracoes/equipes/${equipeId}`)
     revalidatePath('/', 'layout')
+
+    return { success: true, data: { reused, jaNoProjeto: false } }
 }
 
 export async function desvincularColunaDoProjeto(formData: FormData) {
