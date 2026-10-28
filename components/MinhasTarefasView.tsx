@@ -36,6 +36,7 @@ interface Props {
   usuarioLogadoId: string
   usuarioLogadoRole?: string
   defaultStatusFilter?: string
+  defaultUsuarioFilter?: string
 }
 
 const ItemTypes = {
@@ -123,7 +124,8 @@ export default function MinhasTarefasView({
     esconderFiltroProjeto = false,
     usuarioLogadoId,
     usuarioLogadoRole,
-    defaultStatusFilter = 'TODOS'
+    defaultStatusFilter = 'TODOS',
+    defaultUsuarioFilter = usuarioLogadoId
 }: Props) {
   const getColunaId = (t: TarefaComRelacoes) => {
       return t.coluna_id || t.coluna?.id || null
@@ -155,7 +157,7 @@ export default function MinhasTarefasView({
   const [busca, setBusca] = useState('')
   const [projetoId, setProjetoId] = useState('')
   const [prioridadeFilter, setPrioridadeFilter] = useState('')
-  const [usuarioId, setUsuarioId] = useState(usuarioLogadoId)
+  const [usuarioId, setUsuarioId] = useState(defaultUsuarioFilter)
   const [statusFilter, setStatusFilter] = useState(defaultStatusFilter)
 
   const formatarData = (dataOriginal: Date | string | null) => {

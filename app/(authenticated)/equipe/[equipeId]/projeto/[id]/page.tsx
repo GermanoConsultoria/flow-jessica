@@ -187,6 +187,7 @@ export default async function ProjetoPage({ params }: { params: Promise<{ id: st
             usuarioLogadoId={usuarioLogado.id}
             usuarioLogadoRole={usuarioLogado.role}
             defaultStatusFilter="PENDENTE"
+            defaultUsuarioFilter=""
           />
         )}
 
